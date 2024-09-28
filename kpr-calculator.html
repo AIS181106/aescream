@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator KPR</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .calculator {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            width: 300px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px 30px 8px 30px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .input-group i {
+            position: absolute;
+            top: 33px;
+            left: 10px;
+            color: #666;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>Kalkulator KPR</h1>
+        <div class="input-group">
+            <label for="loanAmount">Jumlah Pinjaman:</label>
+            <i class="fas fa-money-bill-wave"></i>
+            <input type="text" id="loanAmount" placeholder="Rp">
+        </div>
+        <div class="input-group">
+            <label for="loanTerm">Jangka Waktu (tahun):</label>
+            <i class="fas fa-calendar-alt"></i>
+            <input type="number" id="loanTerm" min="1" max="30">
+        </div>
+        <div class="input-group">
+            <label for="interestRate">Suku Bunga (% per tahun):</label>
+            <i class="fas fa-percentage"></i>
+            <input type="number" id="interestRate" min="0" max="100" step="0.01">
+        </div>
+        <button onclick="calculateMortgage()">Hitung</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function formatRupiah(angka) {
+            var reverse = angka.toString().split('').reverse().join(''),
+            ribuan = reverse.match(/\d{1,3}/g);
+            ribuan = ribuan.join('.').split('').reverse().join('');
+            return 'Rp ' + ribuan;
+        }
+
+        function unformatRupiah(rupiahString) {
+            return parseFloat(rupiahString.replace(/[^\d]/g, ''));
+        }
+
+        document.getElementById('loanAmount').addEventListener('input', function(e) {
+            let value = unformatRupiah(this.value);
+            if (!isNaN(value)) {
+                this.value = formatRupiah(value);
+            }
+        });
+
+        function calculateMortgage() {
+            let loanAmount = unformatRupiah(document.getElementById('loanAmount').value);
+            let loanTerm = parseInt(document.getElementById('loanTerm').value);
+            let interestRate = parseFloat(document.getElementById('interestRate').value);
+
+            if (isNaN(loanAmount) || loanAmount <= 0) {
+                alert('Masukkan jumlah pinjaman yang valid');
+                return;
+            }
+            if (isNaN(loanTerm) || loanTerm <= 0 || loanTerm > 30) {
+                alert('Masukkan jangka waktu yang valid (1-30 tahun)');
+                return;
+            }
+            if (isNaN(interestRate) || interestRate < 0 || interestRate > 100) {
+                alert('Masukkan suku bunga yang valid (0-100%)');
+                return;
+            }
+
+            let monthlyRate = interestRate / 100 / 12;
+            let numberOfPayments = loanTerm * 12;
+
+            let monthlyPayment = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+            let totalPayment = monthlyPayment * numberOfPayments;
+            let totalInterest = totalPayment - loanAmount;
+
+            let resultHTML = `
+                <p><strong>Cicilan per Bulan:</strong> ${formatRupiah(Math.round(monthlyPayment))}</p>
+                <p><strong>Total Pembayaran:</strong> ${formatRupiah(Math.round(totalPayment))}</p>
+                <p><strong>Total Bunga:</strong> ${formatRupiah(Math.round(totalInterest))}</p>
+            `;
+
+            document.getElementById('result').innerHTML = resultHTML;
+        }
+    </script>
+</body>
+</html>
